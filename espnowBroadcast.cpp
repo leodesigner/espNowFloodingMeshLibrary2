@@ -30,16 +30,17 @@ static void msg_send_cb(u8* mac, u8 status)
 {}
 #endif
 void espnowBroadcast_begin(int channel){
+ 
+  WiFi.mode(WIFI_STA);
   WiFi.disconnect();
 
-  WiFi.mode(WIFI_STA);
-
-  if (esp_now_init() != 0)
-  {
+  if (esp_now_init() != 0) {
     return;
   }
+
   esp_now_register_recv_cb(esp_msg_recv_cb);
   esp_now_register_send_cb(msg_send_cb);
+
 
   #ifdef ESP32
     static esp_now_peer_info_t slave;
@@ -62,7 +63,7 @@ void espnowBroadcast_begin(int channel){
 }
 
 void espnowBroadcast_send(const uint8_t *d, int len){
-  if(init_done==false) {
+  if (init_done==false) {
     Serial.println("espnowBroadcast not initialized");
     return;
   }
