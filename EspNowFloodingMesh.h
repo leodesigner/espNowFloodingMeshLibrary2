@@ -1,6 +1,8 @@
 #ifndef ESP_NOBRADCAST_H
 #define ESP_NOBRADCAST_H
 
+#define DEFAULT_TIMEOUT_MS  3000
+#define DEFAULT_TRY_CNT     3
 //#define USE_RAW_801_11
 
 #ifndef USE_RAW_801_11
@@ -39,9 +41,12 @@
 
     uint32_t espNowFloodingMesh_sendAndHandleReply(uint8_t* msg, int size, int ttl, void (*f)(const uint8_t *, int)); //Max message length is 236byte
 
-    //Run this only in Mainloop!!!
-    bool espNowFloodingMesh_sendAndWaitReply(uint8_t* msg, int size, int ttl, int tryCount=1, void (*f)(const uint8_t *, int)=NULL, int timeoutMs=3000, int expectedCountOfReplies=1); //Max message length is 236byte
-    bool espNowFloodingMesh_syncTimeAndWait(unsigned long timeoutMs=3000, int tryCount=3);
+    // Run this only in Mainloop!!!
+    // Max message length is 236byte
+    bool espNowFloodingMesh_sendAndWaitReply(uint8_t* msg, int size, int ttl, int tryCount=1, void (*f)(const uint8_t *, int)=NULL, int timeoutMs=DEFAULT_TIMEOUT_MS, int expectedCountOfReplies=1, uint16_t backoffMs=0); 
+    bool espNowFloodingMesh_syncTimeAndWait(unsigned long timeoutMs=DEFAULT_TIMEOUT_MS, int tryCount=DEFAULT_TRY_CNT, uint16_t backoffMs=0);
+    // the same but with the message annoncement (can be device name, config etc.)
+    bool espNowFloodingMesh_syncTimeAnnonceAndWait(uint8_t* msg, int size, unsigned long timeoutMs=DEFAULT_TIMEOUT_MS, int tryCount=DEFAULT_TRY_CNT, uint16_t backoffMs=0);
 
     void espNowFloodingMesh_sendReply(uint8_t* msg, int size, int ttl, uint32_t replyIdentifier);
 

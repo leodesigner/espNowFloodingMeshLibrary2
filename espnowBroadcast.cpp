@@ -19,9 +19,11 @@ void esp_msg_recv_cb(const uint8_t *mac_addr, const uint8_t *data, int len)
 void esp_msg_recv_cb(u8 *mac_addr, u8 *data, u8 len)
 #endif
 {
-  if(espnowCB!=NULL)
-    espnowCB(data,len);
+  if ( espnowCB != NULL ) {
+    espnowCB(data, len);
+  }
 }
+
 #ifdef ESP32
 static void msg_send_cb(const uint8_t* mac, esp_now_send_status_t sendStatus)
 {}
@@ -31,10 +33,12 @@ static void msg_send_cb(u8* mac, u8 status)
 #endif
 void espnowBroadcast_begin(int channel){
  
-  WiFi.mode(WIFI_STA);
-  WiFi.disconnect();
+  // takes too much time
+  //WiFi.mode(WIFI_STA);
+  //WiFi.disconnect();
 
-  if (esp_now_init() != 0) {
+  if (esp_now_init() != ESP_OK) {
+    Serial.println("Error initializing ESP-NOW");
     return;
   }
 
@@ -60,10 +64,12 @@ void espnowBroadcast_begin(int channel){
   #endif
   // Set up callback
   init_done = true;
+  // Serial.println("."); // debug
+ 
 }
 
 void espnowBroadcast_send(const uint8_t *d, int len){
-  if (init_done==false) {
+  if (init_done == false) {
     Serial.println("espnowBroadcast not initialized");
     return;
   }
@@ -71,6 +77,13 @@ void espnowBroadcast_send(const uint8_t *d, int len){
     esp_now_send(broadcast_mac, (uint8_t*)(d), len);
   #else
     esp_now_send((u8*)broadcast_mac, (u8*)(d), len);
+    int result = esp_now_send((u8*)broadcast_mac, (u8*)(d), len);
+     
+    if (result != ESP_OK) {
+        Serial.print("Error sending the data: ");
+        Serial.println(result);
+    }
+
   #endif
 }
 void espnowBroadcast_cb(void(*cb)(const uint8_t *, int)){

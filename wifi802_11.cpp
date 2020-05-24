@@ -110,22 +110,22 @@ void wifi_802_receive_cb(void(*cb)(const uint8_t *, int, uint8_t)) {
 
 void wifi_802_11_send(const uint8_t *d, int len) {
   uint8_t buf[500];
-  for(int i=0;i<5;i++){
-  if(len>sizeof(buf)-sizeof(raw_HEADER)-2) return;
+  for (int i=0;i<5;i++) { // really ?
+    if (len>sizeof(buf)-sizeof(raw_HEADER)-2) return;
 
-  memcpy(buf,raw_HEADER, sizeof(raw_HEADER));
-  memcpy(buf+sizeof(raw_HEADER)+2, d, len);
-  memcpy(buf+SEQNUM_OFFSET,(char*)&sequence, 2);
+    memcpy(buf,raw_HEADER, sizeof(raw_HEADER));
+    memcpy(buf+sizeof(raw_HEADER)+2, d, len);
+    memcpy(buf+SEQNUM_OFFSET,(char*)&sequence, 2);
 
-  buf[sizeof(raw_HEADER)]=(len>>8)&0xff;
-  buf[sizeof(raw_HEADER)+1]=len&0xff;
+    buf[sizeof(raw_HEADER)]=(len>>8)&0xff;
+    buf[sizeof(raw_HEADER)+1]=len&0xff;
 
 
-    #ifdef ESP32
-    esp_wifi_80211_tx(ESP_IF_WIFI_STA, buf, sizeof(raw_HEADER) + len+ 2, true);
-    #else
-    wifi_send_pkt_freedom(buf, sizeof(raw_HEADER) + len+ 2, true);
-    #endif
-    sequence++;
+      #ifdef ESP32
+      esp_wifi_80211_tx(ESP_IF_WIFI_STA, buf, sizeof(raw_HEADER) + len+ 2, true);
+      #else
+      wifi_send_pkt_freedom(buf, sizeof(raw_HEADER) + len+ 2, true);
+      #endif
+      sequence++;
   }
 }
