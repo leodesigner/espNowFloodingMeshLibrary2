@@ -15,6 +15,7 @@
 
 //#define DISABLE_CRYPTING //send messages as plain text
 //#define DEBUG_PRINTS
+
 #define MAX_ALLOWED_TIME_DIFFERENCE_IN_MESSAGES 3 //if message time differens more than this from RTC, reject message
 
     #ifndef USE_RAW_801_11
