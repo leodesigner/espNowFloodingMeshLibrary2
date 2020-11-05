@@ -1,6 +1,6 @@
 {
-  "name": "EspNowFloodingMesh",
-  "version": "0.0.1",
+  "name": "EspNowFloodingMesh2",
+  "version": "2.0.1",
   "keywords": "flooding mesh, espnow, mesh",
   "description": "ESPNOW broadcast library with flooding mesh and AES support.",
   "examples": "examples/*/*/*.ino",
