@@ -1,8 +1,19 @@
 # ESPNOW flooding mesh library
 
-See example project: https://github.com/arttupii/EspNowFloodingMesh
+See example project: TODO
 
-ESPNOW flooding mesh library.
+ESPNOW flooding mesh library, version 2
+forked from https://github.com/arttupii/espNowFloodingMeshLibrary
+
+Features added/bugfixes since version 2:
+- a lot of bugfixes and improvements, battle tested with 15+ nodes
+- telemetry stats (optional)
+- time sync after bootup is now possible from any node, not only master
+- new INSTANT_TIME_SYNC_REQ_ANNONCE internal message for node annoncement
+- led blinking support on message receive
+- mesh begin can now run without WiFi disconnect (speeds up boot time, important for PIR sensor sleeping nodes)
+- new function for sending messages with specific message ID (future support for multi mqtt gataway setup)
+- message roundtrip reduced as much as possible to get more reponsive real-time system
 
 Features:
 - Maximum number of slave nodes: unlimited
