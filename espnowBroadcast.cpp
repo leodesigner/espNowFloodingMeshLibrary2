@@ -13,7 +13,7 @@
 
 const unsigned char broadcast_mac[] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
 bool init_done = false;
-void(*espnowCB)(const uint8_t *, int) = NULL;
+void(*espnowCB)(const uint8_t *, int, const uint8_t *) = NULL;
 
 #ifdef ESP32
 void esp_msg_recv_cb(const uint8_t *mac_addr, const uint8_t *data, int len)
@@ -27,21 +27,41 @@ void esp_msg_recv_cb(u8 *mac_addr, u8 *data, u8 len)
            mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5]);
   Serial.print("Last Packet Recv from: "); Serial.println(macStr);
   #endif
+  //Serial.print(".");
   if ( espnowCB != NULL ) {
-    espnowCB(data, len);
+    espnowCB(data, len, mac_addr);
   }
 }
 
+#ifdef DEBUG_PRINTS
+bool sending = false;
+long send_ts = 0;
+#endif
+
 #ifdef ESP32
 static void msg_send_cb(const uint8_t* mac, esp_now_send_status_t sendStatus)
-{}
+{
+  #ifdef DEBUG_PRINTS
+  Serial.print("^");
+  Serial.println(sendStatus);
+  #endif
+}
 #else
-static void msg_send_cb(u8* mac, u8 status)
-{}
+static void msg_send_cb(u8* mac_addr, u8 status)
+{
+  #ifdef DEBUG_PRINTS
+  sending = false;
+  Serial.print("^");
+  Serial.print(status);
+  Serial.print(" > elapsed: ");
+  Serial.println(micros() - send_ts);
+  #endif
+}
 #endif
-void espnowBroadcast_begin(int channel){
+
+void espnowBroadcast_begin(int channel) {
  
-  // takes too much time
+  // takes too much time - now it's external
   //WiFi.mode(WIFI_STA);
   //WiFi.disconnect();
 
@@ -50,6 +70,7 @@ void espnowBroadcast_begin(int channel){
     return;
   }
 
+  // Set up callback
   esp_now_register_recv_cb(esp_msg_recv_cb);
   esp_now_register_send_cb(msg_send_cb);
 
@@ -70,30 +91,42 @@ void espnowBroadcast_begin(int channel){
     esp_now_set_self_role(ESP_NOW_ROLE_SLAVE);
     esp_now_add_peer((u8*)broadcast_mac, ESP_NOW_ROLE_SLAVE, channel, NULL, 0);
   #endif
-  // Set up callback
   init_done = true;
-  // Serial.println("."); // debug
  
 }
 
 void espnowBroadcast_send(const uint8_t *d, int len){
   if (init_done == false) {
+    #ifdef DEBUG_PRINTS
     Serial.println("espnowBroadcast not initialized");
+    #endif
     return;
   }
   #ifdef ESP32
     esp_now_send(broadcast_mac, (uint8_t*)(d), len);
   #else
-    esp_now_send((u8*)broadcast_mac, (u8*)(d), len);
+    #ifdef DEBUG_PRINTS
+    //Serial.print("*");
+    if (sending) { 
+      Serial.print("Error - we did't receive sent callback!, last sent was: ");
+      Serial.println(micros() - send_ts);
+      //delay(3);
+    }
+    sending = true;
+    send_ts = micros();
+    #endif
     int result = esp_now_send((u8*)broadcast_mac, (u8*)(d), len);
-     
+
     if (result != ESP_OK) {
-        Serial.print("Error sending the data: ");
-        Serial.println(result);
+      #ifdef DEBUG_PRINTS
+      Serial.print("Error sending the data: ");
+      Serial.println(result);
+      #endif
     }
 
   #endif
 }
-void espnowBroadcast_cb(void(*cb)(const uint8_t *, int)){
+
+void espnowBroadcast_cb(void(*cb)(const uint8_t *, int, const uint8_t *)) {
   espnowCB = cb;
 }
