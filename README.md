@@ -1,6 +1,6 @@
 # ESPNOW flooding mesh library
 
-See example project: TODO
+See example project: https://github.com/leodesigner/esp_mesh_pir_sensor
 
 ESPNOW flooding mesh library, version 2
 forked from https://github.com/arttupii/espNowFloodingMeshLibrary
