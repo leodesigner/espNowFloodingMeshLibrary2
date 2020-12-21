@@ -7,7 +7,7 @@
   #include "mbedtls/aes.h"
 #else
 #include <ESP8266WiFi.h>
-#include "AESLib.h" //From https://github.com/kakopappa/arduino-esp8266-aes-lib
+#include "AESLib.h" // From https://github.com/kakopappa/arduino-esp8266-aes-lib
 #endif
 
 #ifndef USE_RAW_801_11
@@ -25,10 +25,10 @@
 #define REJECTED_LIST_SIZE 50
 #define REQUEST_REPLY_DATA_BASE_SIZE 30
 
-#define ALLOW_TIME_ERROR_IN_SYNC_MESSAGE false //Decrease secure. false=Validate sync messages against own RTC time
+#define ALLOW_TIME_ERROR_IN_SYNC_MESSAGE false //Decrease security. false=Validate sync messages against own RTC time
 
-
-#define RESEND_SYNC_TIME_MS 10000
+// 10 - 300 sec
+#define RESEND_SYNC_TIME_MS           15000
 
 #define USER_MSG                      1
 #define SYNC_TIME_MSG                 2
@@ -130,6 +130,7 @@ int8_t led_pin = -1;
 bool led_is_on = false;
 uint8_t led_blink_mode = 0;
 uint32_t recv_packet_ts = 0;
+uint32_t tx_packet_ts = 0;
 
 void espNowFloodingMesh_enableBlink(int8_t pin, uint8_t mode) {
     led_pin = pin;
@@ -408,7 +409,11 @@ void espNowFloodingMesh_loop() {
     rejectedMessageDB.removeItem();
   }
   
-  if (led_blink_mode == 1 && led_is_on == true && recv_packet_ts < now - 40) {
+  if (led_blink_mode == LED_BLINK_RX_MODE && led_is_on == true && recv_packet_ts < now - LED_BLINK_TIMEOUT_MS) {
+    led_is_on = false;
+    digitalWrite(led_pin, HIGH); // off
+  }
+  if (led_blink_mode == LED_BLINK_TX_MODE && led_is_on == true && tx_packet_ts < now - LED_BLINK_TIMEOUT_MS) {
     led_is_on = false;
     digitalWrite(led_pin, HIGH); // off
   }
@@ -534,7 +539,7 @@ void msg_recv_cb(const uint8_t *data, int len, const uint8_t *mac_addr)
 
   recv_packet_ts = millis();
 
-  if (led_blink_mode == 1) {
+  if (led_blink_mode == LED_BLINK_RX_MODE) {
     digitalWrite(led_pin, LOW); // turn on
     led_is_on = true;
   }
@@ -980,6 +985,14 @@ Serial.print("--->:");
       espnowBroadcast_send((uint8_t*)&m, sendSize);
   #endif
   telemetry_stats.sent_pkt++;
+
+  if (led_blink_mode == LED_BLINK_TX_MODE) {
+    digitalWrite(led_pin, LOW); // turn on
+    led_is_on = true;
+  }
+
+  tx_packet_ts = millis();
+
   return ret;
 }
 

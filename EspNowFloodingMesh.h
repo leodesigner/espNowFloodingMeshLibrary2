@@ -8,6 +8,10 @@
 #define ENABLE_TELEMETRY
 #define TELEMETRY_STATS_SIZE    10
 
+#define LED_BLINK_RX_MODE       1
+#define LED_BLINK_TX_MODE       2
+#define LED_BLINK_TIMEOUT_MS    40
+
 #ifndef USE_RAW_801_11
   #ifdef ESP32
 //  #include <esp_now.h>
